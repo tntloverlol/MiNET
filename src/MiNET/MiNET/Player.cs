@@ -46,6 +46,8 @@ using MiNET.Utils;
 using MiNET.Worlds;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using MiNET.UI.Forms;
+using Newtonsoft.Json.Linq;
 
 namespace MiNET
 {
@@ -78,6 +80,7 @@ namespace MiNET
 		public UUID ClientUuid { get; set; }
 		public string ServerAddress { get; set; }
 		public PlayerInfo PlayerInfo { get; set; }
+		public ConcurrentDictionary<int, IForm> FormsOpened { get; set; } = new ConcurrentDictionary<int, IForm>();
 
 		public Skin Skin { get; set; }
 
@@ -165,17 +168,71 @@ namespace MiNET
 
 		public void HandleMcpePurchaseReceipt(McpePurchaseReceipt message)
 		{
+
 		}
 
 		public void HandleMcpePlayerSkin(McpePlayerSkin message)
 		{
+			Skin = new Skin()
+			{
+				SkinId = message.skinName,
+				SkinData = message.skinData,
+				SkinGeometryName = message.geometryModel,
+				SkinGeometry = message.geometryData,
+			};
+			{
+				McpePlayerList playerList = McpePlayerList.CreateObject();
+				playerList.records = new PlayerRemoveRecords { this };
+				Level.RelayBroadcast(Level.CreateMcpeBatch(playerList.Encode()));
+				playerList.records = null;
+				playerList.PutPool();
+			}
+			{
+				McpePlayerList playerList = McpePlayerList.CreateObject();
+				playerList.records = new PlayerAddRecords { this };
+				Level.RelayBroadcast(Level.CreateMcpeBatch(playerList.Encode()));
+				playerList.records = null;
+				playerList.PutPool();
+			}
 		}
-
 		public void HandleMcpeModalFormResponse(McpeModalFormResponse message)
 		{
+			var id = message.formid;
+			if (FormsOpened.TryRemove(id, out IForm form))
+			{
+				try
+				{
+					form.Process(this, JArray.Parse(message.data));
+				}
+				catch
+				{
+					// ¯\_(ツ)_/¯
+				}
+			}
 		}
 
-		public void HandleMcpeServerSettingsRequest(McpeServerSettingsRequest message)
+		public void OpenForm(IForm form, bool settings = false)
+		{
+			FormsOpened.AddOrUpdate(0, form, (id, f) =>
+			{
+				return f;
+			});
+			if (settings)
+			{
+				var pk = McpeServerSettingsResponse.CreateObject();
+				pk.data = form.GetData();
+				pk.formid = 0;
+				SendPackage(pk);
+			}
+			else
+			{
+				var pk = McpeModalFormRequest.CreateObject();
+				pk.data = form.GetData();
+				pk.formid = 0;
+				SendPackage(pk);
+			}
+		}
+		public virtual void HandleMcpeServerSettingsRequest(McpeServerSettingsRequest message)
 		{
 		}
 
