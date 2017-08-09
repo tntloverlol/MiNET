@@ -29,6 +29,7 @@ namespace MiNET.Net
 	{
 		public string source; // = null;
 		public string message; // = null;
+		public string xuid; // = null;
 
 		partial void AfterEncode()
 		{
@@ -36,6 +37,7 @@ namespace MiNET.Net
 			ChatTypes chatType = (ChatTypes) type;
 			switch (chatType)
 			{
+
 				case ChatTypes.Chat:
 				case ChatTypes.Whisper:
 				case ChatTypes.Announcement:
@@ -43,7 +45,6 @@ namespace MiNET.Net
 					Write(message);
 					break;
 				case ChatTypes.Raw:
-				case ChatTypes.Tip:
 				case ChatTypes.System:
 					Write(message);
 					break;
@@ -54,6 +55,7 @@ namespace MiNET.Net
 					// More stuff
 					break;
 			}
+			Write(xuid);
 		}
 
 		public override void Reset()
@@ -91,6 +93,7 @@ namespace MiNET.Net
 					// More stuff
 					break;
 			}
+			xuid = ReadString();
 		}
 	}
 }
