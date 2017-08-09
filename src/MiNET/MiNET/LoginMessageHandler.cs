@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Xsl;
@@ -568,6 +569,8 @@ namespace MiNET
 
 	public interface IServer
 	{
+		PlayerNetworkSession CreateNetworkSession(IPEndPoint endpoint, short mtuSize, long clientGuid);
+		LoginMessageHandler CreateLoginHandler(PlayerNetworkSession session);
 		IMcpeMessageHandler CreatePlayer(INetworkHandler session, PlayerInfo playerInfo);
 	}
 
@@ -603,6 +606,22 @@ namespace MiNET
 		public DefaultServer(MiNetServer server)
 		{
 			_server = server;
+		}
+		
+		public PlayerNetworkSession CreateNetworkSession(IPEndPoint endpoint, short mtuSize, long clientGuid)
+		{
+			return new PlayerNetworkSession(_server, null, endpoint, mtuSize)
+			{
+				State = ConnectionState.Connecting,
+				LastUpdatedTime = DateTime.UtcNow,
+				MtuSize = mtuSize,
+				NetworkIdentifier = clientGuid
+			};
+		}
+
+		public LoginMessageHandler CreateLoginHandler(PlayerNetworkSession session)
+		{
+			return new LoginMessageHandler(session);
 		}
 
 		public virtual IMcpeMessageHandler CreatePlayer(INetworkHandler session, PlayerInfo playerInfo)
