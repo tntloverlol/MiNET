@@ -202,7 +202,7 @@ namespace MiNET
 			{
 				try
 				{
-					form.Process(this, JArray.Parse(message.data));
+					form.Process(this, message.data);
 				}
 				catch
 				{
