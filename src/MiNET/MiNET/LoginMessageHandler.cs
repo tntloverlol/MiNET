@@ -44,10 +44,10 @@ namespace MiNET
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (LoginMessageHandler));
 
-		private readonly PlayerNetworkSession _session;
+		protected readonly PlayerNetworkSession _session;
 
 		private object _loginSyncLock = new object();
-		private PlayerInfo _playerInfo = new PlayerInfo();
+		protected PlayerInfo _playerInfo = new PlayerInfo();
 
 		public LoginMessageHandler(PlayerNetworkSession session)
 		{
