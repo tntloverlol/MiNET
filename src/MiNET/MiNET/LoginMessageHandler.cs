@@ -209,8 +209,44 @@ namespace MiNET
 						if (!headers.ContainsKey("x5u")) continue;
 
 						string x5u = headers["x5u"];
+                        #if MONO
+                        CertificateData data;
 
-						if (identityPublicKey == null)
+                        data = Newtonsoft.Json.JsonConvert.DeserializeObject<CertificateData> (JWT.Payload(token.ToString()));
+
+                        if (data != null)
+                        {
+                            if (Log.IsDebugEnabled) Log.Debug("Decoded token success");
+
+                            if (CertificateData.MojangRootKey.Equals(x5u, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                Log.Debug("Got Mojang key. Is valid = " + data.CertificateAuthority);
+                                validationKey = data.IdentityPublicKey;
+                            }
+                            else if (validationKey != null && validationKey.Equals(x5u, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                _playerInfo.CertificateData = data;
+                            }
+                            else
+                            {
+                                if (data.ExtraData == null) continue;
+
+                                // Self signed, make sure they don't fake XUID
+                                if (data.ExtraData.Xuid != null)
+                                {
+                                    Log.Warn("Received fake XUID from " + data.ExtraData.DisplayName);
+                                    data.ExtraData.Xuid = null;
+                                }
+
+                                _playerInfo.CertificateData = data;
+                            }
+                        }
+                        else
+                        {
+                            Log.Error("Not a valid Identity Public Key for decoding");
+                        }
+                        #else
+                        if (identityPublicKey == null)
 						{
 							if (CertificateData.MojangRootKey.Equals(x5u, StringComparison.InvariantCultureIgnoreCase))
 							{
@@ -275,6 +311,7 @@ namespace MiNET
 						{
 							Log.Error("Not a valid Identity Public Key for decoding");
 						}
+						#endif
 					}
 
 					//TODO: Implement disconnect here
@@ -292,6 +329,7 @@ namespace MiNET
 							UseEncryption = Config.GetProperty("UseEncryptionForAll", false) || (Config.GetProperty("UseEncryption", true) && !string.IsNullOrWhiteSpace(_playerInfo.CertificateData.ExtraData.Xuid)),
 						};
 
+						#if !MONO
 						if (_session.CryptoContext.UseEncryption)
 						{
 							ECDiffieHellmanPublicKey publicKey = CryptoUtils.CreateEcDiffieHellmanPublicKey(_playerInfo.CertificateData.IdentityPublicKey);
@@ -349,6 +387,7 @@ namespace MiNET
 
 							if (Log.IsDebugEnabled) Log.Warn($"Encryption enabled for {_session.Username}");
 						}
+						#endif
 					}
 				}
 
