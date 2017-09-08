@@ -1498,7 +1498,7 @@ namespace MiNET
 
 		protected object _disconnectSync = new object();
 
-		private bool _haveJoined = false;
+		protected bool _haveJoined = false;
 
 		public virtual void Disconnect(string reason, bool sendDisconnect = true)
 		{

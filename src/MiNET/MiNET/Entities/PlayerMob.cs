@@ -61,7 +61,16 @@ namespace MiNET.Entities
 					ClientUuid = Uuid,
 					EntityId = EntityId,
 					NameTag = NameTag,
-					Skin = Skin
+					Skin = Skin,
+					PlayerInfo = new PlayerInfo {
+						CertificateData = new CertificateData
+						{
+							ExtraData = new ExtraData
+							{
+								Xuid = ""
+							}
+						}
+					}
 				};
 
 				McpePlayerList playerList = McpePlayerList.CreateObject();

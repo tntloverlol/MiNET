@@ -852,7 +852,7 @@ namespace MiNET.Worlds
 			byte skyLight = chunk.GetSkylight(blockCoordinates.X & 0x0f, blockCoordinates.Y & 0xff, blockCoordinates.Z & 0x0f);
 			byte biomeId = chunk.GetBiome(blockCoordinates.X & 0x0f, blockCoordinates.Z & 0x0f);
 
-			Block block = BlockFactory.GetBlockById(bid);
+			Block block = GetBlockById(bid);
 			block.Coordinates = blockCoordinates;
 			block.Metadata = metadata;
 			block.BlockLight = blockLight;
@@ -861,7 +861,12 @@ namespace MiNET.Worlds
 
 			return block;
 		}
-
+		
+		protected virtual Block GetBlockById(byte id)
+		{
+			return BlockFactory.GetBlockById(id);
+		}
+		
 		public bool IsBlock(BlockCoordinates blockCoordinates, int blockId)
 		{
 			ChunkColumn chunk = GetChunk(blockCoordinates);
