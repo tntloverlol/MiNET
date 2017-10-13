@@ -60,7 +60,7 @@ namespace MiNET.Plugins.Commands
 			public int SuccessCount { get; set; } = 1;
 		}
 
-		[Command(Name = "op")]
+		[Command(Name = "op", Description = "Make player an operator")]
 		public SimpleResponse MakeOperator(Player commander, Target player)
 		{
 			string body = player.Selector;
@@ -330,7 +330,7 @@ namespace MiNET.Plugins.Commands
 			return new SimpleResponse {Body = $"{commander.Username} set difficulty to {difficulty}"};
 		}
 
-		[Command(Name = "time set")]
+		[Command(Name = "timeset")]
 		public SimpleResponse TimeSet(Player commander, int time)
 		{
 			Level level = commander.Level;
@@ -351,7 +351,7 @@ namespace MiNET.Plugins.Commands
 			Night = 13000
 		}
 
-		[Command(Name = "time set")]
+		[Command(Name = "timeset")]
 		public SimpleResponse TimeSet(Player commander, DayNight time)
 		{
 			Level level = commander.Level;

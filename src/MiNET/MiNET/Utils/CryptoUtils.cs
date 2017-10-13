@@ -13,7 +13,7 @@
 // WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
 // the specific language governing rights and limitations under the License.
 // 
-// The Original Code is Niclas Olofsson.
+// The Original Code is MiNET.
 // 
 // The Original Developer is the Initial Developer.  The Initial Developer of
 // the Original Code is Niclas Olofsson.
@@ -34,7 +34,7 @@ using System.Text;
 using System.Threading;
 using Jose;
 using log4net;
-using MiNET.Net;
+using MiNET.Utils.Skins;
 
 namespace MiNET.Utils
 {
@@ -203,7 +203,7 @@ namespace MiNET.Utils
 				ExtraData = new ExtraData
 				{
 					DisplayName = username,
-					Identity = isEmulator? Guid.NewGuid().ToString():"85e4febd-3d33-4008-b044-1ad9fb85b26c",
+					Identity = isEmulator ? Guid.NewGuid().ToString() : "85e4febd-3d33-4008-b044-1ad9fb85b26c",
 				},
 				Iss = "self",
 				IdentityPublicKey = b64Key,
@@ -248,11 +248,11 @@ namespace MiNET.Utils
 			Skin skin = new Skin
 			{
 				Slim = false,
-				Texture = Encoding.Default.GetBytes(new string('Z', 8192)),
-				SkinType = "Standard_Custom"
+				SkinData = Encoding.Default.GetBytes(new string('Z', 8192)),
+				SkinId = "Standard_Custom"
 			};
 
-			string skin64 = Convert.ToBase64String(skin.Texture);
+			string skin64 = Convert.ToBase64String(skin.SkinData);
 
 
 			//{
@@ -280,12 +280,12 @@ namespace MiNET.Utils
 	""DefaultInputMode"": 1,
 	""DeviceModel"": ""MINET CLIENT"",
 	""DeviceOS"": 7,
-	""GameVersion"": ""1.1.0.4"",
+	""GameVersion"": ""1.2.0.15"",
 	""GuiScale"": 0,
 	""LanguageCode"": ""en_US"",
 	""ServerAddress"": ""yodamine.com:19132"",
 	""SkinData"": ""{skin64}"",
-	""SkinId"": ""{skin.SkinType}"",
+	""SkinId"": ""{skin.SkinId}"",
 	""TenantId"": ""75a3f792-a259-4428-9a8d-4e832fb960e4"",
 	""UIProfile"": 0
 }}";

@@ -140,18 +140,20 @@ namespace MiNET.Worlds
 				Log.InfoFormat("World pre-cache {0} chunks completed in {1}ms", i, chunkLoading.ElapsedMilliseconds);
 			}
 
-			//if (Dimension == Dimension.Overworld)
-			//{
-			//	if (Config.GetProperty("CheckForSafeSpawn", false))
-			//	{
-			//		var height = GetHeight((BlockCoordinates) SpawnPoint);
-			//		if (height > SpawnPoint.Y) SpawnPoint.Y = height;
-			//		Log.Debug("Checking for safe spawn");
-			//	}
+			if (Dimension == Dimension.Overworld)
+			{
+				if (Config.GetProperty("CheckForSafeSpawn", false))
+				{
+					var height = GetHeight((BlockCoordinates)SpawnPoint);
+					if (height > SpawnPoint.Y) SpawnPoint.Y = height;
+					Log.Debug("Checking for safe spawn");
+				}
 
-			//	NetherLevel = LevelManager.GetDimension(this, Dimension.Nether);
-			//	TheEndLevel = LevelManager.GetDimension(this, Dimension.TheEnd);
-			//}
+				NetherLevel = LevelManager.GetDimension(this, Dimension.Nether);
+				TheEndLevel = LevelManager.GetDimension(this, Dimension.TheEnd);
+			}
+
+			//SpawnPoint.Y = 20;
 
 			StartTimeInTicks = DateTime.UtcNow.Ticks;
 
@@ -964,7 +966,7 @@ namespace MiNET.Worlds
 			var message = McpeUpdateBlock.CreateObject();
 			message.blockId = block.Id;
 			message.coordinates = block.Coordinates;
-			message.blockMetaAndPriority = (byte) (0xb << 4 | (block.Metadata & 0xf));
+			message.blockMetaAndPriority = (byte)(0xb << 4 | (block.Metadata & 0xf));
 			RelayBroadcast(message);
 		}
 
@@ -1110,7 +1112,7 @@ namespace MiNET.Worlds
 		public void Interact(Player player, Item itemInHand, BlockCoordinates blockCoordinates, BlockFace face, Vector3 faceCoords)
 		{
 			Block target = GetBlock(blockCoordinates);
-			if (target.Interact(this, player, blockCoordinates, face, faceCoords)) return; // Handled in block interaction
+			if (!player.IsSneaking && target.Interact(this, player, blockCoordinates, face, faceCoords)) return; // Handled in block interaction
 
 			if (itemInHand is ItemBlock)
 			{
@@ -1129,14 +1131,14 @@ namespace MiNET.Worlds
 					var message = McpeUpdateBlock.CreateObject();
 					message.blockId = block.Id;
 					message.coordinates = block.Coordinates;
-					message.blockMetaAndPriority = (byte) (0xb << 4 | (block.Metadata & 0xf));
+					message.blockMetaAndPriority = (byte)(0xb << 4 | (block.Metadata & 0xf));
 					player.SendPackage(message);
 
 					return;
 				}
 			}
 
-			itemInHand.UseItem(this, player, blockCoordinates, face, faceCoords);
+			itemInHand.PlaceBlock(this, player, blockCoordinates, face, faceCoords);
 		}
 
 		public event EventHandler<BlockBreakEventArgs> BlockBreak;
@@ -1171,12 +1173,12 @@ namespace MiNET.Worlds
 			}
 		}
 
-		private static void RevertBlockAction(Player player, Block block, BlockEntity blockEntity)
-		{
+	    private static void RevertBlockAction(Player player, Block block, BlockEntity blockEntity)
+	    {
 			var message = McpeUpdateBlock.CreateObject();
 			message.blockId = block.Id;
 			message.coordinates = block.Coordinates;
-			message.blockMetaAndPriority = (byte) (0xb << 4 | (block.Metadata & 0xf));
+			message.blockMetaAndPriority = (byte)(0xb << 4 | (block.Metadata & 0xf));
 			player.SendPackage(message);
 
 			// Revert block entity if exists

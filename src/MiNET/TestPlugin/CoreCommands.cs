@@ -13,7 +13,7 @@
 // WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
 // the specific language governing rights and limitations under the License.
 // 
-// The Original Code is Niclas Olofsson.
+// The Original Code is MiNET.
 // 
 // The Original Developer is the Initial Developer.  The Initial Developer of
 // the Original Code is Niclas Olofsson.
@@ -45,8 +45,11 @@ using MiNET.Net;
 using MiNET.Plugins;
 using MiNET.Plugins.Attributes;
 using MiNET.Plugins.Commands;
+using MiNET.UI;
 using MiNET.Utils;
 using MiNET.Worlds;
+using Button = MiNET.UI.Button;
+using Input = MiNET.UI.Input;
 
 namespace TestPlugin
 {
@@ -59,7 +62,7 @@ namespace TestPlugin
 
 		protected override void OnEnable()
 		{
-			Context.PluginManager.LoadCommands(new HelpCommand(Context.Server.PluginManager));
+			//Context.PluginManager.LoadCommands(new HelpCommand(Context.Server.PluginManager));
 			Context.PluginManager.LoadCommands(new VanillaCommands(Context.Server.PluginManager));
 		}
 
@@ -77,8 +80,13 @@ namespace TestPlugin
 		//    return packet;
 		//}
 
+		[Command(Name = "tc", Description = "Test command")]
+		public void TestCommand(Player player, int param)
+		{
+		}
+
 		[Command(Description = "Save world")]
-		[Authorize(Permission = UserPermission.Admin)]
+		[Authorize(Permission = CommandPermission.Admin)]
 		public void Save(Player player)
 		{
 			AnvilWorldProvider provider = player.Level.WorldProvider as AnvilWorldProvider;
@@ -129,6 +137,53 @@ namespace TestPlugin
 			player.Level.SetBlock(gold);
 			Thread.Sleep(100);
 			player.Level.SetBlock(block);
+		}
+
+		[Command]
+		public void Form(Player player)
+		{
+			CustomForm customForm = new CustomForm();
+			customForm.Title = "A title";
+			customForm.Content = new List<CustomElement>()
+			{
+				new Label {Text = "A label"},
+				new Input {Text = "", Placeholder = "Placeholder", Value = ""},
+				new Toggle {Text = "A toggler", Value = true},
+				new Slider {Text = "A slider", Min = 0, Max = 10, Step = 0.1f, Value = 3},
+				new StepSlider {Text = "A step slider", Steps = new List<string>() {"Step 1", "Step 2", "Step 3"}, Value = 1},
+				new Dropdown {Text = "A dropdown", Options = new List<string>() {"Option 1", "Option 2", "Option 3"}, Value = 1},
+			};
+
+			player.SendForm(customForm);
+		}
+
+		[Command]
+		public void FormModal(Player player)
+		{
+			var modalForm = new ModalForm();
+			modalForm.Title = "A title";
+			modalForm.Content = "A bit of content";
+			modalForm.Button1 = "Button 1";
+			modalForm.Button2 = "Button 2";
+
+			player.SendForm(modalForm);
+		}
+
+		[Command]
+		public void FormSimple(Player player)
+		{
+			var simpleForm = new SimpleForm();
+			simpleForm.Title = "A title";
+			simpleForm.Content = "A bit of content";
+			simpleForm.Buttons = new List<Button>()
+			{
+				new Button {Text = "Button 1", Image = new Image {Type = "url", Url = "https://i.imgur.com/SedU2Ad.png"}},
+				new Button {Text = "Button 2", Image = new Image {Type = "url", Url = "https://i.imgur.com/oBMg5H3.png"}},
+				new Button {Text = "Button 3", Image = new Image {Type = "url", Url = "https://i.imgur.com/hMAfqQd.png"}},
+				new Button {Text = "Close"},
+			};
+
+			player.SendForm(simpleForm);
 		}
 
 		[Command]
@@ -531,7 +586,7 @@ namespace TestPlugin
 		[Command]
 		public void Permission(Player player, int permission)
 		{
-			player.PermissionLevel = (UserPermission) permission;
+			player.CommandPermission = (CommandPermission) permission;
 			player.SendAdventureSettings();
 		}
 
@@ -849,7 +904,12 @@ namespace TestPlugin
 		}
 
 		[Command]
-		public void EnumTestTest(Player player, CommandNameEnum commandName, EntityTypeEnum entityType, BlockTypeEnum blockType)
+		public void EnumTest(Player player, ItemTypeEnum itemType, EntityTypeEnum entityType, BlockTypeEnum blockType, CommandNameEnum commandName)
+		{
+		}
+
+		[Command]
+		public void EnumTest2(Player player, EnchantEnum enchant, EffectEnum effect)
 		{
 		}
 
@@ -996,7 +1056,7 @@ namespace TestPlugin
 		{
 			player.HealthManager = player.HealthManager is NoDamageHealthManager ? new HealthManager(player) : new NoDamageHealthManager(player);
 			player.SendUpdateAttributes();
-			player.SendMessage($"{player.Username} set NoDamage={player.HealthManager is NoDamageHealthManager}", type: McpeText.TypeRaw);
+			player.SendMessage($"{player.Username} set NoDamage={player.HealthManager is NoDamageHealthManager}", type: MessageType.Raw);
 		}
 
 		[Command(Name = "r")]
@@ -1163,7 +1223,6 @@ namespace TestPlugin
 						message.blockId = block.Id;
 						message.coordinates = block.Coordinates;
 						message.blockMetaAndPriority = (byte) (0xb << 4 | (block.Metadata & 0xf));
-
 						level.RelayBroadcast(sendList.ToArray(), message);
 					}
 				}
