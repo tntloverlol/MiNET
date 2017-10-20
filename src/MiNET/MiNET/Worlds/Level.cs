@@ -118,7 +118,7 @@ namespace MiNET.Worlds
 		public Level TheEndLevel { get; set; }
 		public Level OverworldLevel { get; set; }
 
-		public void Initialize()
+		public virtual void Initialize()
 		{
 			//IsWorldTimeStarted = false;
 			WorldProvider.Initialize();
@@ -614,32 +614,31 @@ namespace MiNET.Worlds
 					}
 				}
 
-				//foreach (var entity in entities)
-				//{
-				//	if (entity.LastUpdatedTime >= lastSendTime)
-				//	{
-				//		{
-				//			McpeMoveEntity moveEntity = McpeMoveEntity.CreateObject();
-				//			moveEntity.entityId = entity.EntityId;
-				//			moveEntity.position = (PlayerLocation)entity.KnownPosition.Clone();
-				//			moveEntity.position.Y += entity.PositionOffset;
-				//			byte[] bytes = moveEntity.Encode();
-				//			BatchUtils.WriteLength(stream, bytes.Length);
-				//			stream.Write(bytes, 0, bytes.Length);
-				//			moveEntity.PutPool();
-				//		}
-				//		{
-				//			McpeSetEntityMotion entityMotion = McpeSetEntityMotion.CreateObject();
-				//			entityMotion.entityId = entity.EntityId;
-				//			entityMotion.velocity = entity.Velocity;
-				//			byte[] bytes = entityMotion.Encode();
-				//			BatchUtils.WriteLength(stream, bytes.Length);
-				//			stream.Write(bytes, 0, bytes.Length);
-				//			entityMotion.PutPool();
-				//		}
-				//		entiyMoveCount++;
-				//	}
-				//}
+				foreach (var entity in entities)
+				{
+					if (entity.LastUpdatedTime >= lastSendTime)
+					{
+						{
+							McpeMoveEntity moveEntity = McpeMoveEntity.CreateObject();
+							moveEntity.runtimeEntityId = entity.EntityId;
+							moveEntity.position += entity.PositionOffset;
+							byte[] bytes = moveEntity.Encode();
+							BatchUtils.WriteLength(stream, bytes.Length);
+							stream.Write(bytes, 0, bytes.Length);
+							moveEntity.PutPool();
+						}
+						{
+							McpeSetEntityMotion entityMotion = McpeSetEntityMotion.CreateObject();
+							entityMotion.runtimeEntityId = entity.EntityId;
+							entityMotion.velocity = entity.Velocity;
+							byte[] bytes = entityMotion.Encode();
+							BatchUtils.WriteLength(stream, bytes.Length);
+							stream.Write(bytes, 0, bytes.Length);
+							entityMotion.PutPool();
+						}
+						entiyMoveCount++;
+					}
+				}
 
 				if (playerMoveCount == 0 && entiyMoveCount == 0) return;
 
@@ -851,7 +850,7 @@ namespace MiNET.Worlds
 			byte skyLight = chunk.GetSkylight(blockCoordinates.X & 0x0f, blockCoordinates.Y & 0xff, blockCoordinates.Z & 0x0f);
 			byte biomeId = chunk.GetBiome(blockCoordinates.X & 0x0f, blockCoordinates.Z & 0x0f);
 
-			Block block = BlockFactory.GetBlockById(bid);
+			Block block = GetBlockById(bid);
 			block.Coordinates = blockCoordinates;
 			block.Metadata = metadata;
 			block.BlockLight = blockLight;
@@ -859,6 +858,11 @@ namespace MiNET.Worlds
 			block.BiomeId = biomeId;
 
 			return block;
+		}
+
+		protected virtual Block GetBlockById(byte id)
+		{
+			return BlockFactory.GetBlockById(id);
 		}
 
 		public bool IsBlock(BlockCoordinates blockCoordinates, int blockId)
@@ -1109,7 +1113,7 @@ namespace MiNET.Worlds
 			return !e.Cancel;
 		}
 
-		public void Interact(Player player, Item itemInHand, BlockCoordinates blockCoordinates, BlockFace face, Vector3 faceCoords)
+		public virtual void Interact(Player player, Item itemInHand, BlockCoordinates blockCoordinates, BlockFace face, Vector3 faceCoords)
 		{
 			Block target = GetBlock(blockCoordinates);
 			if (!player.IsSneaking && target.Interact(this, player, blockCoordinates, face, faceCoords)) return; // Handled in block interaction
@@ -1150,7 +1154,7 @@ namespace MiNET.Worlds
 			return !e.Cancel;
 		}
 
-		public void BreakBlock(Player player, BlockCoordinates blockCoordinates)
+		public virtual void BreakBlock(Player player, BlockCoordinates blockCoordinates)
 		{
 			Block block = GetBlock(blockCoordinates);
 			BlockEntity blockEntity = GetBlockEntity(blockCoordinates);
@@ -1173,7 +1177,7 @@ namespace MiNET.Worlds
 			}
 		}
 
-	    private static void RevertBlockAction(Player player, Block block, BlockEntity blockEntity)
+	    protected static void RevertBlockAction(Player player, Block block, BlockEntity blockEntity)
 	    {
 			var message = McpeUpdateBlock.CreateObject();
 			message.blockId = block.Id;

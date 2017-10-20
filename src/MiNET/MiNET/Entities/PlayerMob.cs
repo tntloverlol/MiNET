@@ -68,7 +68,7 @@ namespace MiNET.Entities
 			NoAi = true;
 			HealthManager.IsOnFire = false;
 			Velocity = Vector3.Zero;
-			PositionOffset = 1.62f;
+			PositionOffset = new PlayerLocation(0, 1.62f, 0);
 		}
 
 		[Wired]
