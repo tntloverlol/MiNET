@@ -55,14 +55,14 @@ namespace MiNET
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (Player));
 
-		private MiNetServer Server { get; set; }
+		protected MiNetServer Server { get; set; }
 		public IPEndPoint EndPoint { get; private set; }
 		public INetworkHandler NetworkHandler { get; set; }
 
 		private Dictionary<Tuple<int, int>, McpeWrapper> _chunksUsed = new Dictionary<Tuple<int, int>, McpeWrapper>();
-		private ChunkCoordinates _currentChunkPosition;
+		protected ChunkCoordinates _currentChunkPosition;
 
-		private Inventory _openInventory;
+		protected Inventory _openInventory;
 		public PlayerInventory Inventory { get; private set; }
 
 		public PlayerLocation SpawnPosition { get; set; }
@@ -329,7 +329,7 @@ namespace MiNET
 			SendPackage(packet);
 		}
 
-		public int ChunkRadius { get; private set; } = -1;
+		public int ChunkRadius { get; protected set; } = -1;
 
 		public virtual void HandleMcpeRequestChunkRadius(McpeRequestChunkRadius message)
 		{
@@ -647,7 +647,7 @@ namespace MiNET
 			// Do nothing
 		}
 
-		public void Start(object o)
+		public virtual void Start(object o)
 		{
 			Stopwatch watch = new Stopwatch();
 			watch.Restart();
@@ -1467,7 +1467,7 @@ namespace MiNET
 			SendPackage(creativeContent);
 		}
 
-		private void SendChunkRadiusUpdate()
+		protected void SendChunkRadiusUpdate()
 		{
 			McpeChunkRadiusUpdate package = McpeChunkRadiusUpdate.CreateObject();
 			package.chunkRadius = ChunkRadius;
@@ -1508,9 +1508,9 @@ namespace MiNET
 			lightning.SpawnEntity();
 		}
 
-		private object _disconnectSync = new object();
+		protected object _disconnectSync = new object();
 
-		private bool _haveJoined = false;
+		protected bool _haveJoined = false;
 
 		public virtual void Disconnect(string reason, bool sendDisconnect = true)
 		{
@@ -1647,7 +1647,7 @@ namespace MiNET
 			}
 		}
 
-		public double CurrentSpeed { get; private set; } = 0;
+		public double CurrentSpeed { get; protected set; } = 0;
 
 		protected virtual bool AcceptPlayerMove(McpeMovePlayer message, bool isOnGround, bool isFlyingHorizontally)
 		{
@@ -1793,9 +1793,9 @@ namespace MiNET
 		}
 
 
-		private object _inventorySync = new object();
+		protected object _inventorySync = new object();
 
-		public void OpenInventory(BlockCoordinates inventoryCoord)
+		public virtual void OpenInventory(BlockCoordinates inventoryCoord)
 		{
 			lock (_inventorySync)
 			{
@@ -1851,7 +1851,7 @@ namespace MiNET
 			}
 		}
 
-		private void OnInventoryChange(Player player, Inventory inventory, byte slot, Item itemStack)
+		protected void OnInventoryChange(Player player, Inventory inventory, byte slot, Item itemStack)
 		{
 			if (player == this)
 			{
@@ -2658,7 +2658,7 @@ namespace MiNET
 			}
 		}
 
-		private void SendChunksForKnownPosition()
+		protected void SendChunksForKnownPosition()
 		{
 			if (!Monitor.TryEnter(_sendChunkSync)) return;
 
