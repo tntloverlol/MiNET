@@ -46,6 +46,10 @@ namespace MiNET
 		{
 		}
 
+		public virtual void Init() {
+			GetLevel(null, Dimension.Overworld.ToString());
+		}
+
 		public virtual Level GetLevel(Player player, string name)
 		{
 			Level level = Levels.FirstOrDefault(l => l.LevelId.Equals(name, StringComparison.InvariantCultureIgnoreCase));
@@ -131,7 +135,7 @@ namespace MiNET
 			Parallel.ForEach(sources, block => { BlockLightCalculations.Calculate(level, block.Coordinates); });
 		}
 
-		public void RemoveLevel(Level level)
+		public virtual void RemoveLevel(Level level)
 		{
 			if (Levels.Contains(level))
 			{
